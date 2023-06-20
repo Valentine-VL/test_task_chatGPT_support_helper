@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Support Helper</title>
+</head>
+<body>
+  <h3>Chat history:</h3>
+  <div class="chat-container" id="chat-container">
+    <div class="message bot-message">
+      <p>Welcome to the chat window! Question is chosen by random, refresh to see another one!</p>
+    </div>
+  </div>
+  <div class="input-container">
+    <h3>Question:</h3>
+    <input type="text" id="user-input" placeholder="Type your question" value="{{question}}">
+    <br>
+    <button id="sendButton" onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    function sendMessage() {
+      let userInput = document.getElementById("user-input").value
+      let messageContainer = document.getElementById("chat-container")
+      let button = document.getElementById("sendButton")
+
+      button.disabled = true
+      button.innerText = "Loading ..."
+
+
+      // Create and append the user message to the chat window
+      let userMessage = document.createElement("div")
+      userMessage.className = "message user-message"
+      userMessage.innerHTML = "<p><b>You: </b>" + userInput + "</p>"
+      messageContainer.appendChild(userMessage)
+      document.getElementById("user-input").value = ""
+
+      // Make an AJAX request to the backend using fetch
+      fetch("/send_msg", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: userInput })
+      })
+      .then(response => response.text())
+      .then(botResponse => {
+
+        // Create and append the bot response to the chat window
+        let botMessage = document.createElement("div")
+        botMessage.className = "message bot-message"
+        botMessage.innerHTML = "<p><b>Bot: </b>" + botResponse + "</p>"
+        messageContainer.appendChild(botMessage)
+
+        // Scroll to the bottom of the chat window
+        messageContainer.scrollTop = messageContainer.scrollHeight
+      })
+      .catch(error => {
+        console.error("Error:", error)
+      })
+      .finally( () => {
+        button.disabled = false
+        button.innerText = "Send"
+      }
+      )
+    }
+  </script>
+</body>
+  <style>
+    .chat-container {
+      border: 1px solid #ccc;
+      height: 50vh;
+      width: 50vw;
+      overflow-y: scroll;
+      margin: auto;
+    }
+
+    .message {
+      background-color: #f1f1f1;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+    }
+
+    .bot-message {
+      background-color: #f8f9fa;
+    }
+
+    .input-container {
+      margin-top: 10px;
+    }
+
+    .input-container input {
+      width: 50vw;
+      height: 3vh;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    .input-container button {
+      width: 100px;
+      background-color: mediumseagreen;
+      color: black;
+      padding: 10px;
+      margin-top: 10px;
+      align-self: center;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-content: center;
+      flex-wrap: wrap;
+      flex-flow: column wrap;
+      background-color: dimgrey;
+    }
+  </style>
+</html>
